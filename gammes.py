@@ -32,6 +32,10 @@ IMGDIR = 'img/'
 SIGBUTTON_EN = "Show signature"
 SIGBUTTON_FR = "Voir l'armure"
 
+BACKGROUND_COLOR = "white"
+BUTTON_COLOR = "#7f9ea4"
+BUTTON_COLOR_ACT = "#b0898b"
+
 def selectScale():
     global r
     r = randrange( len( SCALES ) )
@@ -62,7 +66,7 @@ def refreshSignature( label ):
 def toggleSignature( tk, signature, label ):
     if signature.get():
         newimg = ImageTk.PhotoImage( Image.open( IMGDIR + SIGNATURES[SCALES_EN[r]] ) )
-        label.configure( image = newimg )
+        label.configure( image = newimg, background = BACKGROUND_COLOR)
         label.image = newimg
         label.pack( side = tk.BOTTOM )
     else:
@@ -82,12 +86,13 @@ def languageSel( lang, label, sigbutton, sigbutton_text ):
 def main():
     
     window = tk.Tk()
+    window.configure( background = "white" )
     signature = tk.BooleanVar( value = False )
     language = tk.StringVar( value = "en" )
 
     # Label that will be changed for the scale name
 #    scale = tk.Label( text = "Hello, Tkinter", width=25, height=5, font=("Arial", 25) )
-    scale = tk.Label( text = "", font=("Arial", 25) )
+    scale = tk.Label( text = "", background = BACKGROUND_COLOR, highlightthickness = 0, font=("Arial", 25) )
 
     # Key signature, not visible yet
     labelsig = tk.Label( )
@@ -97,20 +102,23 @@ def main():
     sigbutton_text.set( SIGBUTTON_EN )
     opt_sign = tk.Checkbutton ( text = sigbutton_text.get(),
                                 variable = signature,
-                                textvariable = sigbutton_text,
+                                textvariable = sigbutton_text, 
+                                background = BACKGROUND_COLOR, highlightthickness = 0,
                                 onvalue = True, offvalue = False,
                                 command = partial( toggleSignature, tk, signature, labelsig ) )
 
     # Language
-    lang_en = tk.Radiobutton( text = "Français", variable = language, value = "fr",
+    lang_en = tk.Radiobutton( text = "Français", background = BACKGROUND_COLOR, highlightthickness = 0,
+                              variable = language, value = "fr",
                               command = partial( languageSel, language, scale, opt_sign, sigbutton_text ) )
-    lang_fr = tk.Radiobutton( text = "English", variable = language, value = "en",
+    lang_fr = tk.Radiobutton( text = "English", background = BACKGROUND_COLOR, highlightthickness = 0,
+                              variable = language, value = "en",
                               command = partial( languageSel, language, scale, opt_sign, sigbutton_text ) )
     
     # This is where we click
     button = tk.Button( text="Click me!",
                         width=25, height=5,
-                        bg="blue", fg="yellow",
+                        bg=BUTTON_COLOR, fg="yellow", activebackground=BUTTON_COLOR_ACT,
                         command = partial( printScale, scale, signature, labelsig ) )
 
     # Here we go
