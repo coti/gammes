@@ -9,6 +9,8 @@ import tkinter as tk
 from functools import partial
 from PIL import ImageTk, Image
 
+import webbrowser
+
 r = -1
 
 ## Missing:
@@ -160,12 +162,42 @@ def languageSel( lang, label, sigbutton, signature, sigbutton_text, sign ):
         sign.pack_forget()
         sign.pack()
     
+def showcredits():
+    newwindow = tk.Tk()
+    newwindow.configure( background = "white" )
+    newwindow.title( "About this program" )
+    cred = tk.Label( newwindow, text = "Credits", background = BACKGROUND_COLOR, highlightthickness = 0, font=("Arial", 25) )
+
+    text = tk.Text( newwindow, width=35, height=6 )
+    text.insert("end", "(c) Camille Coti, 2024\n\n" )
+    text.insert("end", "Find the source code on GitHub:\n")
+    text.insert("end", "www.github.com/coti/gammes\n")
+    text.insert("end", "Released under the GPL v3 licence.\n\n")
+    text.insert("end", "Now go practice.\n")
+    
+    htmllink = tk.Label( newwindow, text = "Visit GitHub", background = BACKGROUND_COLOR, highlightthickness = 0, font=("Arial", 18), fg="blue", cursor="hand2")
+
+    htmllink.bind("<Button-1>", lambda e: webbrowser.open_new_tab("https://www.github.com/coti/gammes"))
+
+    exit_button = tk.Button( newwindow, text="Exit", command=newwindow.destroy)  
+
+    cred.pack()
+    text.pack(expand=True, fill=tk.BOTH)
+    htmllink.pack()
+    exit_button.pack() 
+
 def main():
     
     window = tk.Tk()
     window.configure( background = "white" )
     signature = tk.BooleanVar( value = False )
     language = tk.StringVar( value = "en" )
+
+    aboutbut = tk.Button( text="About",
+                          width=25, height=1,
+                          bg=BACKGROUND_COLOR, fg="black", activebackground="gray",
+                          command = showcredits )
+
 
     # Label that will be changed for the scale name
     scale = tk.Label( text = "", background = BACKGROUND_COLOR, highlightthickness = 0, font=("Arial", 25) )
@@ -198,6 +230,7 @@ def main():
                         command = partial( printScale, window, scale, signature, sigcanvas ) )
 
     # Here we go
+    aboutbut.pack()
     lang_fr.pack()
     lang_en.pack()
     button.pack()
