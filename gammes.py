@@ -145,7 +145,7 @@ def toggleSignature( window, signature, canvas ):
     else:
         canvas.pack_forget()
 
-def languageSel( lang, label, sigbutton, sigbutton_text ):
+def languageSel( lang, label, sigbutton, signature, sigbutton_text, sign ):
     global SCALES
     if lang.get() == "en":
         SCALES = SCALES_EN
@@ -155,6 +155,10 @@ def languageSel( lang, label, sigbutton, sigbutton_text ):
         sigbutton_text.set( SIGBUTTON_FR )
     sigbutton.pack()
     refreshScale( label )
+    if signature.get():
+    # keep the signature at the bottom
+        sign.pack_forget()
+        sign.pack()
     
 def main():
     
@@ -182,10 +186,10 @@ def main():
     # Language
     lang_en = tk.Radiobutton( text = "Français", background = BACKGROUND_COLOR, highlightthickness = 0,
                               variable = language, value = "fr",
-                              command = partial( languageSel, language, scale, opt_sign, sigbutton_text ) )
+                              command = partial( languageSel, language, scale, opt_sign, signature, sigbutton_text, sigcanvas ) )
     lang_fr = tk.Radiobutton( text = "English", background = BACKGROUND_COLOR, highlightthickness = 0,
                               variable = language, value = "en",
-                              command = partial( languageSel, language, scale, opt_sign, sigbutton_text ) )
+                              command = partial( languageSel, language, scale, opt_sign, signature, sigbutton_text, sigcanvas ) )
     
     # This is where we click
     button = tk.Button( text="Click me!",
