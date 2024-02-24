@@ -46,7 +46,7 @@ FLATLOC = { 'B': ( 97, 43 ),
             'D': ( 127, 32 ),
             'G': ( 137, 54 ),
             'C': ( 147, 37 ),
-            'F': ( 157, 56 ),
+            'F': ( 157, 59 ),
 }
 
 SIGBUTTON_EN = "Show signature"
@@ -56,10 +56,18 @@ BACKGROUND_COLOR = "white"
 BUTTON_COLOR = "#7f9ea4"
 BUTTON_COLOR_ACT = "#b0898b"
 
+#########################################################################
+## Random selection
+#########################################################################
+
 def selectScale():
     global r
     r = randrange( len( SCALES ) )
     return SCALES[r]
+
+#########################################################################
+## Drawing functions
+#########################################################################
 
 def drawsharp( canvas, locations ):
     tilt = 3
@@ -115,6 +123,20 @@ def printScale( window, label, signature, canvas ):
     if signature.get():
         refreshSignature( window, canvas )
 
+def drawStaff( canvas ):
+    totalheight = canvas.winfo_height()
+    totalwidth = canvas.winfo_width()
+    trebleclef = ImageTk.PhotoImage( Image.open( IMGDIR + TREBLECLEFFILE ) )
+
+    SW = ( totalwidth / 2, totalheight / 2 )
+    
+    canvas.create_image( SW[0], SW[1], anchor = tk.CENTER, image = trebleclef )
+    canvas.image = trebleclef
+
+#########################################################################
+## Functions called when a new scale is drawn
+#########################################################################
+
 def refreshScale( label ):
     if r < 0:
         scale = ''
@@ -130,15 +152,9 @@ def refreshSignature( window, canvas ):
     drawStaff( canvas )
     drawScale( canvas )
 
-def drawStaff( canvas ):
-    totalheight = canvas.winfo_height()
-    totalwidth = canvas.winfo_width()
-    trebleclef = ImageTk.PhotoImage( Image.open( IMGDIR + TREBLECLEFFILE ) )
-
-    SW = ( totalwidth / 2, totalheight / 2 )
-    
-    canvas.create_image( SW[0], SW[1], anchor = tk.CENTER, image = trebleclef )
-    canvas.image = trebleclef
+#########################################################################
+## Triggered when the signature option is ticked
+#########################################################################
 
 def toggleSignature( window, signature, canvas ):
     if signature.get():
@@ -146,6 +162,10 @@ def toggleSignature( window, signature, canvas ):
         refreshSignature( window, canvas )
     else:
         canvas.pack_forget()
+
+#########################################################################
+## Triggered when a language selection button is clicked
+#########################################################################
 
 def languageSel( lang, label, sigbutton, signature, sigbutton_text, sign ):
     global SCALES
@@ -158,10 +178,14 @@ def languageSel( lang, label, sigbutton, signature, sigbutton_text, sign ):
     sigbutton.pack()
     refreshScale( label )
     if signature.get():
-    # keep the signature at the bottom
+        # keep the signature at the bottom
         sign.pack_forget()
         sign.pack()
     
+#########################################################################
+## Credits in a new window
+#########################################################################
+
 def showcredits():
     newwindow = tk.Tk()
     newwindow.configure( background = "white" )
@@ -176,7 +200,6 @@ def showcredits():
     text.insert("end", "Now go practice.\n")
     
     htmllink = tk.Label( newwindow, text = "Visit GitHub", background = BACKGROUND_COLOR, highlightthickness = 0, font=("Arial", 18), fg="blue", cursor="hand2")
-
     htmllink.bind("<Button-1>", lambda e: webbrowser.open_new_tab("https://www.github.com/coti/gammes"))
 
     exit_button = tk.Button( newwindow, text="Exit", command=newwindow.destroy)  
@@ -186,13 +209,19 @@ def showcredits():
     htmllink.pack()
     exit_button.pack() 
 
+#########################################################################
+## Main function
+#########################################################################
+
 def main():
     
     window = tk.Tk()
     window.configure( background = "white" )
+    window.title( "Random scales" )
     signature = tk.BooleanVar( value = False )
     language = tk.StringVar( value = "en" )
 
+    # Button at the top of the window that spawns a new window to display credits.
     aboutbut = tk.Button( text="About",
                           width=25, height=1,
                           bg=BACKGROUND_COLOR, fg="black", activebackground="gray",
