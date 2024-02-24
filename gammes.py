@@ -18,16 +18,34 @@ SCALES_EN = [ 'C', 'C#', 'Db', 'D', 'Eb', 'E', 'F', 'F#', 'Gb', 'G', 'Ab', 'A', 
 SCALES_FR = [ 'Do', 'Do #', 'Ré b', 'Ré', 'Mi b', 'Mi', 'Fa', 'Fa #', 'Sol b', 'Sol', 'La b', 'La', 'Si b', 'Si', 'Do b' ]
 SCALES = SCALES_EN
 
-SIGNATURES = { 'Cb': 'dob.png', 'C': 'do.png', 'C#': 'dod.png', 
-               'Db': 'reb.png', 'D': 're.png', 
-               'Eb': 'mib.png', 'E': 'mi.png',
-               'F': 'fa.png', 'F#': 'fad.png',
-               'Gb': 'solb.png', 'G': 'sol.png', 
-               'Ab': 'lab.png', 'A': 'la.png', 
-               'Bb': 'sib.png', 'B': 'si.png'
-               }
+SIGNATURES = { 'C': ( 's', '' ), 'G': ( 's', 'F' ), 'D': ( 's', 'FC' ), 'A': ( 's', 'FCG' ),
+               'E': ( 's', 'FCGD' ), 'B': ( 's', 'FCGDA' ), 'F#': ( 's', 'FCGDAE' ),
+               'C#': ( 's', 'FCGDAEB' ), 
+               'F': ( 'f', 'B' ), 'Bb': ( 'f', 'BE' ), 'Eb': ( 'f', 'BEA' ), 
+               'Ab': ( 'f', 'BEAD' ), 'Db': ( 'f', 'BEADG' ),  'Gb': ( 'f', 'BEADGC' ), 
+               'Cb':  ( 'f', 'BEADGCF' )
+              }
 
 IMGDIR = 'img/'
+TREBLECLEFFILE = "treble_empty.png"
+
+SHARPLOC = { 'F': ( 104, 33 ),
+             'C': ( 114, 51 ),
+             'G': ( 124, 28 ),
+             'D': ( 134, 45 ),
+             'A': ( 144, 61 ),
+             'E': ( 154, 40 ),
+             'B': ( 165, 55 ),
+            }
+
+FLATLOC = { 'B': ( 97, 43 ),
+            'E': ( 107, 26 ),
+            'A': ( 117, 47 ),
+            'D': ( 127, 32 ),
+            'G': ( 137, 54 ),
+            'C': ( 147, 37 ),
+            'F': ( 157, 56 ),
+}
 
 SIGBUTTON_EN = "Show signature"
 SIGBUTTON_FR = "Voir l'armure"
@@ -41,11 +59,59 @@ def selectScale():
     r = randrange( len( SCALES ) )
     return SCALES[r]
 
-def printScale( label, signature, img ):
+def drawsharp( canvas, locations ):
+    tilt = 3
+    sharplen = - 14
+    sharphei = 12
+    sharpspacex = - 6
+    sharpspacey = 8
+    vertshift = -3
+    lw = 3
+    fillcolor = '#555'
+    
+    canvas.create_line( locations[0], locations[1],
+                        locations[0] + sharplen + tilt, locations[1] + tilt,
+                        width = lw, fill=fillcolor )
+    canvas.create_line( locations[0], locations[1]+sharpspacey,
+                        locations[0] + sharplen + tilt, locations[1] + sharpspacey + tilt,
+                        width = lw, fill=fillcolor)
+
+    canvas.create_line( locations[0] + vertshift - tilt/2, locations[1] - tilt,
+                        locations[0] + vertshift - tilt/2, locations[1] + sharphei + tilt/2,
+                        width = lw, fill=fillcolor)
+    canvas.create_line( locations[0] + vertshift + sharpspacex, locations[1] - tilt,
+                        locations[0] + vertshift + sharpspacex, locations[1] + sharphei + tilt/2,
+                        width = lw, fill=fillcolor)
+
+def drawflat( canvas, locations ):
+    vertlen = 26
+    belly = 11
+    lw = 3
+    fillcolor = '#555'
+    
+    canvas.create_line( locations[0], locations[1],
+                        locations[0], locations[1] + vertlen,
+                        width = lw, fill=fillcolor )
+
+    canvas.create_line( locations[0], locations[1] + vertlen,
+                        locations[0] + belly, locations[1] + vertlen - belly,
+                        locations[0], locations[1] + vertlen - 6 * belly / 5,
+                        smooth = 1, width = lw, fill=fillcolor )
+
+def drawScale( canvas ):
+    if r < 0: return
+    sig = SIGNATURES[ SCALES_EN[ r ] ]
+    for letter in sig[1]:
+        if sig[0] == 'f':
+            drawflat( canvas, FLATLOC[letter] )
+        else:
+            drawsharp( canvas, SHARPLOC[letter] )
+
+def printScale( window, label, signature, canvas ):
     scale = selectScale()
     label.config( text=scale )
     if signature.get():
-        refreshSignature( img )
+        refreshSignature( window, canvas )
 
 def refreshScale( label ):
     if r < 0:
@@ -56,21 +122,28 @@ def refreshScale( label ):
     label.config(text=scale)
     label.pack()
     
-def refreshSignature( label ):
-    label.pack_forget()
-    newimg = ImageTk.PhotoImage( Image.open( IMGDIR + SIGNATURES[SCALES_EN[r]] ) )
-    label.configure( image = newimg )
-    label.image = newimg
-    label.pack( side = tk.BOTTOM )
+def refreshSignature( window, canvas ):
+    canvas.delete("all")
+    window.update()
+    drawStaff( canvas )
+    drawScale( canvas )
 
-def toggleSignature( tk, signature, label ):
+def drawStaff( canvas ):
+    totalheight = canvas.winfo_height()
+    totalwidth = canvas.winfo_width()
+    trebleclef = ImageTk.PhotoImage( Image.open( IMGDIR + TREBLECLEFFILE ) )
+
+    SW = ( totalwidth / 2, totalheight / 2 )
+    
+    canvas.create_image( SW[0], SW[1], anchor = tk.CENTER, image = trebleclef )
+    canvas.image = trebleclef
+
+def toggleSignature( window, signature, canvas ):
     if signature.get():
-        newimg = ImageTk.PhotoImage( Image.open( IMGDIR + SIGNATURES[SCALES_EN[r]] ) )
-        label.configure( image = newimg, background = BACKGROUND_COLOR)
-        label.image = newimg
-        label.pack( side = tk.BOTTOM )
+        canvas.pack()
+        refreshSignature( window, canvas )
     else:
-        label.pack_forget()
+        canvas.pack_forget()
 
 def languageSel( lang, label, sigbutton, sigbutton_text ):
     global SCALES
@@ -91,11 +164,10 @@ def main():
     language = tk.StringVar( value = "en" )
 
     # Label that will be changed for the scale name
-#    scale = tk.Label( text = "Hello, Tkinter", width=25, height=5, font=("Arial", 25) )
     scale = tk.Label( text = "", background = BACKGROUND_COLOR, highlightthickness = 0, font=("Arial", 25) )
 
     # Key signature, not visible yet
-    labelsig = tk.Label( )
+    sigcanvas = tk.Canvas( background = BACKGROUND_COLOR, width=225, height=120 )
 
     # Toggle key signature display
     sigbutton_text = tk.StringVar()
@@ -105,7 +177,7 @@ def main():
                                 textvariable = sigbutton_text, 
                                 background = BACKGROUND_COLOR, highlightthickness = 0,
                                 onvalue = True, offvalue = False,
-                                command = partial( toggleSignature, tk, signature, labelsig ) )
+                                command = partial( toggleSignature, window, signature, sigcanvas ) )
 
     # Language
     lang_en = tk.Radiobutton( text = "Français", background = BACKGROUND_COLOR, highlightthickness = 0,
@@ -119,7 +191,7 @@ def main():
     button = tk.Button( text="Click me!",
                         width=25, height=5,
                         bg=BUTTON_COLOR, fg="yellow", activebackground=BUTTON_COLOR_ACT,
-                        command = partial( printScale, scale, signature, labelsig ) )
+                        command = partial( printScale, window, scale, signature, sigcanvas ) )
 
     # Here we go
     lang_fr.pack()
